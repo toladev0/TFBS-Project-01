@@ -5,115 +5,115 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
-    public float walkSpeed = 5f; // Speed when walking
-    public float runSpeed = 8f; // Speed when running
-    public float crouchSpeed = 2.5f; // Speed when crouching
+    public float walkSpeed = 5f;
+    public float runSpeed = 8f;
+    public float crouchSpeed = 2.5f;
 
     [Header("Crouch Settings")]
-    public float crouchHeight = 1f; // Height of the character when crouching
-    private float normalHeight; // Original height of the character
+    public float crouchHeight = 1f;
+    private float normalHeight;
 
     [Header("Camera Settings")]
-    public Transform cameraTransform; // Reference to the player's camera
-    public float lookSpeed = 2f; // Sensitivity for looking around
-    public float lookXLimit = 45f; // Vertical look angle limit
+    public Transform cameraTransform;
+    public float lookSpeed = 2f;
+    public float lookXLimit = 45f;
 
-    private CharacterController characterController; // Reference to the CharacterController component
-    private Vector3 moveDirection; // Stores the player's movement direction
-    private float rotationX = 0f; // Tracks vertical camera rotation
-    private bool isCrouching = false; // Whether the player is crouching
+    private CharacterController characterController;
+    private Vector3 moveDirection;
+    private float rotationX = 0f;
+    private bool isCrouching = false;
 
     [Header("Physics")]
-    public float gravity = 9.8f; // Gravity applied to the player
-    private float verticalVelocity; // Tracks the player's vertical velocity
+    public float gravity = 9.8f;
+    private float verticalVelocity;
 
     [Header("Flashlight Settings")]
-    public Light flashlight; // Reference to the flashlight component
+    public Light flashlight;
 
     void Start()
     {
-        // Initialize references and settings
         characterController = GetComponent<CharacterController>();
-        Cursor.lockState = CursorLockMode.Locked; // Lock the cursor to the screen
-        Cursor.visible = false; // Hide the cursor
-        normalHeight = characterController.height; // Save the initial height of the character
-        flashlight.enabled = false; // Ensure flashlight is off initially
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        normalHeight = characterController.height;
+        flashlight.enabled = false;
     }
 
     void Update()
     {
-        // Handle all player inputs and interactions each frame
-        HandleMovement(); // Process movement controls
-        HandleCamera(); // Process camera rotation
-        HandleCrouch(); // Process crouching input
-        HandleFlashlight(); // Toggle flashlight
+        HandleMovement();
+        HandleCamera();
+        HandleCrouch();
+        HandleFlashlight();
     }
 
     void HandleMovement()
     {
-        // Calculate forward and right directions based on the player's orientation
         Vector3 forward = transform.TransformDirection(Vector3.forward);
         Vector3 right = transform.TransformDirection(Vector3.right);
 
-        // Check if the player can sprint (not crouching and holding Left Shift)
         bool canSprint = Input.GetKey(KeyCode.LeftShift) && !isCrouching;
 
-        // Determine movement speed based on current state
         float speed = canSprint ? runSpeed : (isCrouching ? crouchSpeed : walkSpeed);
 
-        // Get movement input
-        float moveDirectionX = Input.GetAxis("Horizontal") * speed; // Horizontal input
-        float moveDirectionZ = Input.GetAxis("Vertical") * speed; // Vertical input
+        float moveDirectionX = Input.GetAxis("Horizontal") * speed;
+        float moveDirectionZ = Input.GetAxis("Vertical") * speed;
 
-        // Apply gravity to the vertical velocity
         if (characterController.isGrounded)
         {
-            verticalVelocity = -gravity * Time.deltaTime; // Reset vertical velocity if grounded
+            verticalVelocity = -gravity * Time.deltaTime;
         }
         else
         {
-            verticalVelocity -= gravity * Time.deltaTime; // Apply gravity if airborne
+            verticalVelocity -= gravity * Time.deltaTime;
         }
 
-        // Combine movement directions and apply gravity
         moveDirection = forward * moveDirectionZ + right * moveDirectionX;
         moveDirection.y = verticalVelocity;
 
-        // Move the character controller
         characterController.Move(moveDirection * Time.deltaTime);
     }
 
     void HandleCamera()
     {
-        // Rotate the camera vertically based on mouse input
         rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
-        rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit); // Clamp vertical rotation
-        cameraTransform.localRotation = Quaternion.Euler(rotationX, 0, 0); // Apply vertical rotation
+        rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
+        cameraTransform.localRotation = Quaternion.Euler(rotationX, 0, 0);
 
-        // Rotate the player horizontally based on mouse input
         float rotationY = Input.GetAxis("Mouse X") * lookSpeed;
         transform.Rotate(0, rotationY, 0);
     }
 
     void HandleCrouch()
     {
-        // Toggle crouch state when the player presses 'C'
         if (Input.GetKeyDown(KeyCode.C))
         {
-            isCrouching = !isCrouching; // Toggle crouch state
-            characterController.height = isCrouching ? crouchHeight : normalHeight; // Adjust character height
+            isCrouching = !isCrouching;
+            StartCoroutine(SmoothCrouchTransition(isCrouching ? crouchHeight : normalHeight));
         }
+    }
+
+    private IEnumerator SmoothCrouchTransition(float targetHeight)
+    {
+        float initialHeight = characterController.height;
+        float elapsedTime = 0f;
+        float duration = 0.2f;
+
+        while (elapsedTime < duration)
+        {
+            characterController.height = Mathf.Lerp(initialHeight, targetHeight, elapsedTime / duration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        characterController.height = targetHeight;
     }
 
     void HandleFlashlight()
     {
-        // Toggle flashlight on/off when the player presses 'F'
-        if (Input.GetKeyDown(KeyCode.F))
+        if (Input.GetKeyDown(KeyCode.F) && flashlight != null)
         {
-            if (flashlight != null) // Ensure flashlight reference exists
-            {
-                flashlight.enabled = !flashlight.enabled; // Toggle flashlight state
-            }
+            flashlight.enabled = !flashlight.enabled;
         }
     }
 }
