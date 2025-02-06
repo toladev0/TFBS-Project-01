@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float walkSpeed = 5f;
+    public float leftRightSpeed;
     public float runSpeed = 8f;
     public float crouchSpeed = 2.5f;
 
@@ -56,7 +57,7 @@ public class PlayerController : MonoBehaviour
 
         float speed = canSprint ? runSpeed : (isCrouching ? crouchSpeed : walkSpeed);
 
-        float moveDirectionX = Input.GetAxis("Horizontal") * speed;
+        float moveDirectionX = Input.GetAxis("Horizontal") * leftRightSpeed;
         float moveDirectionZ = Input.GetAxis("Vertical") * speed;
 
         if (characterController.isGrounded)

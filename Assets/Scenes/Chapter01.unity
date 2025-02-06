@@ -1555,6 +1555,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   walkSpeed: 5
+  leftRightSpeed: 0
   runSpeed: 8
   crouchSpeed: 2.5
   crouchHeight: 1
