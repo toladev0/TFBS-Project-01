@@ -1,17 +1,20 @@
-using System.Collections;
+    using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
-    public float walkSpeed = 5f;
-    public float leftRightSpeed;
-    public float runSpeed = 8f;
-    public float crouchSpeed = 2.5f;
+    public float walkSpeed = 4f;
+    public float runSpeed = 6f;
+    public float crouchSpeed = 2f;
+    public float leftRightWalkSpeed = 2f;
+    public float leftRightRunSpeed = 3f;
+    public float leftRightCrrouchSpeed = 1f;
+
 
     [Header("Crouch Settings")]
-    public float crouchHeight = 1f;
+    public float crouchHeight = 0.5f;
     private float normalHeight;
 
     [Header("Camera Settings")]
@@ -55,10 +58,11 @@ public class PlayerController : MonoBehaviour
 
         bool canSprint = Input.GetKey(KeyCode.LeftShift) && !isCrouching;
 
-        float speed = canSprint ? runSpeed : (isCrouching ? crouchSpeed : walkSpeed);
+        float speedX = canSprint ? leftRightRunSpeed : (isCrouching ? leftRightCrrouchSpeed : leftRightWalkSpeed);
+        float speedZ = canSprint ? runSpeed : (isCrouching ? crouchSpeed : walkSpeed);
 
-        float moveDirectionX = Input.GetAxis("Horizontal") * leftRightSpeed;
-        float moveDirectionZ = Input.GetAxis("Vertical") * speed;
+        float moveDirectionX = Input.GetAxis("Horizontal") * speedX;
+        float moveDirectionZ = Input.GetAxis("Vertical") * speedZ;
 
         if (characterController.isGrounded)
         {
